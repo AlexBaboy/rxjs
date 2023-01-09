@@ -1,0 +1,53 @@
+---
+const links = [
+    {
+        url: '/',
+        title: 'github'
+    },
+    {
+        url: '/canvas',
+        title: 'canvas'
+    },
+    {
+        url: '/redux',
+        title: 'redux'
+    }
+]
+---
+
+<nav>
+    <h2>RxJs learning</h2>
+    <ul>
+        {
+            links.map(link => (
+                <li><a href={link.url}>{link.title}</a></li>
+            ))
+        }
+    </ul>
+</nav>
+
+<style>
+    nav {
+        display: flex;
+        justify-content: space-around;
+        background-color: blueviolet;
+    }
+    h2 {
+        margin: 0;
+        padding: 0;
+    }
+    ul {
+        
+    }
+    ul li {
+        font-size: 20px;
+    }
+    ul li a {
+        color: white;
+        text-decoration: none;
+    }
+    ul li a:hover {
+        text-decoration: underline;
+    }
+
+</style>

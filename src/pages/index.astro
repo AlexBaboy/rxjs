@@ -1,0 +1,84 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+---
+
+<Layout title="Learning RxJs">
+	<h1>Github</h1>
+	<div class="input-field">
+		<input type="text" id="search" >
+		<label for="search" class="active">Search by users of GITHUB</label>
+	</div>
+
+	<div class="row">
+		<div class="col s6 offset-s3" id="result">
+			
+		</div>
+	</div>
+</Layout>
+
+<script>
+	import { fromEvent, EMPTY } from 'rxjs'
+	import { map, debounceTime, 
+			distinctUntilChanged, 
+			switchMap, mergeMap,
+			tap, catchError,
+			filter } from 'rxjs/operators'
+	import { ajax } from 'rxjs/ajax'
+
+	const url = 'https://api.github.com/search/users?q='
+
+	const search = document.getElementById('search')
+	const result = document.getElementById('result')
+
+	const stream$ = fromEvent(search, 'input')
+	.pipe(
+		// парсим значение
+		map(e => e.target.value),
+		// задержка
+		debounceTime(1000),
+		// только измененное значение
+		distinctUntilChanged(),
+		// очистить поле result
+		tap(() => result.innerHTML = ''),
+		// только непустая строка
+		filter(v => v.trim()),
+		// отправить запрос
+		switchMap(v => ajax.getJSON(url + v)
+		// отловить ощибку
+		.pipe(
+			// так как ошибка - пустая строка,
+			// то модем применить константу EMPTY
+			// и ничего не возвращать
+			catchError(err => EMPTY)
+		)
+		),
+		// парсим ответ от сервера
+		map(response => response.items),
+		// делаем из массива отдельные объекты
+		mergeMap(items => items)
+	)
+
+	stream$.subscribe(user => {
+		console.log(user)
+
+		const htmlToResult = `
+			<div class="card">
+				<div class="card-image">
+					<img src="${user.avatar_url}" alt="img" />
+					<span class="card-title">
+						${user.login}
+					</span>
+				</div>
+				<div class="card-action">
+					<a href="${user.html_user}" target="_blank">
+						open github
+					</a>
+				</div>
+			</div>
+		`
+
+		result.insertAdjacentHTML('beforeend', htmlToResult)
+	})
+
+</script>
